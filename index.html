@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Change Trainer</title>
+    <meta name="description" content="Practice making change with this retro receipt-themed training app. Two modes: calculate change mentally or count bills and coins. Perfect for teens learning cash register skills.">
+
+    <!-- Open Graph / LinkedIn -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://apps.jesseprojects.com/changetrainer/">
+    <meta property="og:title" content="Change Trainer - Practice Making Change On the Web">
+    <meta property="og:description" content="Practice making change with this simple training app. Two modes: calculate change or count bills and coins. Perfect for teens learning cash register skills.">
+    <meta property="og:image" content="https://apps.jesseprojects.com/changetrainer/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://apps.jesseprojects.com/changetrainer/">
+    <meta name="twitter:title" content="Change Trainer - Practice Making Change">
+    <meta name="twitter:description" content="Practice making change with this retro receipt-themed training app. Two modes: calculate change mentally or count bills and coins.">
+    <meta name="twitter:image" content="https://apps.jesseprojects.com/changetrainer/og-image.png">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400,700&family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+	<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+	<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+	<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+	<link rel="manifest" href="/site.webmanifest">
+    <!-- Umami Analytics -->
+    <script defer src="https://analytics.jesseprojects.com/script.js" data-website-id="66e76b09-aa0b-444d-8e0f-f4e20032c090"></script>
+    <!-- PocketBase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.1/dist/pocketbase.umd.min.js"></script>
+</head>
+<body>
+    <!-- Floating Header Elements -->
+    <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+    </button>
+    <div class="streak-badge" id="streakBadge">0🔥</div>
+
+    <!-- Main Content Area -->
+    <main class="receipt-body">
+        <!-- Problem Display -->
+        <div class="transaction-section">
+            <div class="transaction-row">
+                <span class="tx-label">TOTAL BILL</span>
+                <span class="tx-value" id="totalBill">$0.00</span>
+            </div>
+            <div class="transaction-row">
+                <span class="tx-label">CASH GIVEN</span>
+                <span class="tx-value" id="cashGiven">$0.00</span>
+            </div>
+            <div class="separator-line"></div>
+            <div class="transaction-row change-row">
+                <span class="tx-label" id="changeDueLabel">CHANGE DUE</span>
+                <span class="tx-value" id="changeDue">$?.??</span>
+            </div>
+        </div>
+
+        <!-- Mode Switcher -->
+        <div class="receipt-mode-switcher" id="modeSwitcher">
+            <div class="mode-labels">
+                <div class="mode-option active" data-mode="1">
+                    <span class="mode-number">MODE 1</span>
+                    <span class="mode-name">CALCULATE</span>
+                    <div class="active-indicator"></div>
+                </div>
+                <div class="mode-divider"></div>
+                <div class="mode-option inactive" data-mode="2">
+                    <span class="mode-number">MODE 2</span>
+                    <span class="mode-name">COUNT CHANGE</span>
+                    <div class="active-indicator"></div>
+                </div>
+            </div>
+            <div class="perforation-line"></div>
+        </div>
+
+        <!-- Input Display (Mode 1 only) -->
+        <div class="input-display" id="inputDisplay">
+            <div class="input-label">YOUR ANSWER:</div>
+            <div class="input-value" id="userInput">$0.00</div>
+        </div>
+
+        <!-- Holding Area (Mode 2) -->
+        <div class="holding-area" id="holdingArea" style="display: none;">
+            <div class="holding-header">
+                <div class="holding-label">CUSTOMER'S CHANGE:</div>
+                <button class="clear-holding-btn" id="clearHoldingBtn">CLEAR</button>
+            </div>
+            <div class="holding-content" id="holdingContent">
+                <div class="empty-state">Tap denominations below</div>
+            </div>
+            <div class="holding-footer">
+                <span class="holding-total-label">TOTAL (TAP TO HIDE):</span>
+                <span class="holding-total-value" id="holdingTotal">$0.00</span>
+            </div>
+        </div>
+
+        <!-- Number Pad (Mode 1 only) -->
+        <div class="numpad" id="numpad">
+            <button class="num-btn" data-num="1">1</button>
+            <button class="num-btn" data-num="2">2</button>
+            <button class="num-btn" data-num="3">3</button>
+            <button class="num-btn" data-num="4">4</button>
+            <button class="num-btn" data-num="5">5</button>
+            <button class="num-btn" data-num="6">6</button>
+            <button class="num-btn" data-num="7">7</button>
+            <button class="num-btn" data-num="8">8</button>
+            <button class="num-btn" data-num="9">9</button>
+            <button class="num-btn clear-btn" data-action="clear">CLR</button>
+            <button class="num-btn" data-num="0">0</button>
+            <button class="num-btn" data-num=".">.</button>
+        </div>
+
+        <!-- Virtual Till (Mode 2) -->
+        <div class="virtual-till" id="virtualTill" style="display: none;">
+            <div class="till-label">TAP TO SELECT:</div>
+
+            <!-- Bills -->
+            <div class="till-section">
+                <div class="till-section-label">BILLS</div>
+                <div class="bills-row">
+                    <button class="bill-btn bill-50" data-value="50.00" data-type="bill">
+                        <div class="denom-value">$50</div>
+                    </button>
+                    <button class="bill-btn bill-20" data-value="20.00" data-type="bill">
+                        <div class="denom-value">$20</div>
+                    </button>
+                    <button class="bill-btn bill-10" data-value="10.00" data-type="bill">
+                        <div class="denom-value">$10</div>
+                    </button>
+                    <button class="bill-btn bill-5" data-value="5.00" data-type="bill">
+                        <div class="denom-value">$5</div>
+                    </button>
+                    <button class="bill-btn bill-1" data-value="1.00" data-type="bill">
+                        <div class="denom-value">$1</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Coins -->
+            <div class="till-section">
+                <div class="till-section-label">COINS</div>
+                <div class="coins-row">
+                    <button class="coin-btn coin-quarter" data-value="0.25" data-type="coin">
+                        <div class="denom-value">25¢</div>
+                    </button>
+                    <button class="coin-btn coin-dime" data-value="0.10" data-type="coin">
+                        <div class="denom-value">10¢</div>
+                    </button>
+                    <button class="coin-btn coin-nickel" data-value="0.05" data-type="coin">
+                        <div class="denom-value">5¢</div>
+                    </button>
+                    <button class="coin-btn coin-penny" data-value="0.01" data-type="coin">
+                        <div class="denom-value">1¢</div>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <button class="submit-btn" id="submitBtn">
+                <span class="btn-text">CHECK ANSWER</span>
+                <span class="btn-icon">→</span>
+            </button>
+            <button class="new-problem-btn" id="newProblemBtn">NEW</button>
+        </div>
+    </main>
+
+    <!-- Modal for Feedback -->
+    <div class="modal-overlay" id="feedbackModal" role="dialog" aria-modal="true" aria-labelledby="modalMessage">
+        <div class="modal-content">
+            <div class="stamp" id="stampEffect"></div>
+            <div class="modal-message" id="modalMessage"></div>
+            <div class="modal-xp" id="modalXP"></div>
+            <button class="modal-close" id="modalClose">CONTINUE</button>
+        </div>
+    </div>
+
+    <!-- Stats Menu Modal -->
+    <div class="modal-overlay" id="statsModal" role="dialog" aria-modal="true" aria-labelledby="statsModalTitle">
+        <div class="modal-content stats-menu">
+            <h2 id="statsModalTitle" class="sr-only">Statistics and Settings</h2>
+            <div class="perforation"></div>
+            <h2>CHANGE TRAINER</h2>
+            <div class="perforation"></div>
+
+            <!-- Mode Selector -->
+            <div class="mode-selector">
+                <span class="stat-label">SELECT MODE</span>
+                <div class="mode-buttons">
+                    <button class="mode-btn active" data-mode="1">MODE 1<br>CALCULATE</button>
+                    <button class="mode-btn" data-mode="2">MODE 2<br>COUNT CHANGE</button>
+                </div>
+            </div>
+
+            <div class="separator-line"></div>
+
+            <!-- Penny Toggle -->
+            <div class="mode-selector">
+                <div class="toggle-row">
+                    <span class="stat-label">USE PENNIES</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="pennyToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="toggle-row" style="margin-top: var(--spacing-sm);">
+                    <span class="stat-label">SOUND EFFECTS</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="separator-line"></div>
+
+            <div class="stats-section">
+                <div class="stat-row">
+                    <span class="stat-label">CURRENT MODE</span>
+                    <span class="stat-value" id="menuMode">CALCULATE</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">TOTAL XP</span>
+                    <span class="stat-value" id="menuXP">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">CURRENT STREAK</span>
+                    <span class="stat-value streak-display" id="menuStreak">0</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">BEST STREAK</span>
+                    <span class="stat-value" id="menuBestStreak">0</span>
+                </div>
+            </div>
+
+            <div class="separator-line"></div>
+
+            <div class="account-section">
+                <p id="accountStatus">Session progress is saved in your browser.</p>
+                <div class="account-buttons" id="accountButtons">
+                    <a href="#" id="createAccountLinkMenu" class="account-link">Create account</a>
+                    <span class="account-separator">or</span>
+                    <a href="#" id="signInLinkMenu" class="account-link">Sign in</a>
+                </div>
+                <a href="#" id="signOutLinkMenu" class="account-link" style="display: none;">Sign out</a>
+            </div>
+
+            <button class="modal-close" id="statsClose">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div class="modal-overlay" id="authModal" style="display: none;" role="dialog" aria-modal="true" aria-labelledby="authModalTitle">
+        <div class="modal-content">
+            <div class="perforation"></div>
+            <h2 id="authModalTitle">CREATE ACCOUNT</h2>
+            <div class="perforation"></div>
+
+            <div class="privacy-notice">
+                <p>🔒 We never sell your data. We only collect your username, email, and game stats. <a href="/privacy.html" target="_blank">Privacy Policy</a></p>
+            </div>
+
+            <div class="requirements-notice" id="requirementsNotice">
+                <p><strong>Requirements:</strong></p>
+                <ul>
+                    <li>Username: 3+ characters</li>
+                    <li>Password: 8+ characters</li>
+                </ul>
+            </div>
+
+            <form id="authForm">
+                <div class="form-row">
+                    <label for="authUsername" id="authUsernameLabel">USERNAME</label>
+                    <input type="text" id="authUsername" required autocomplete="username" minlength="3">
+                </div>
+                <div class="form-row">
+                    <label for="authEmail">EMAIL</label>
+                    <input type="email" id="authEmail" required autocomplete="email">
+                </div>
+                <div class="form-row">
+                    <label for="authPassword">PASSWORD</label>
+                    <input type="password" id="authPassword" required autocomplete="current-password" minlength="8">
+                </div>
+                <div id="authError" class="error-message" style="display: none;"></div>
+
+                <button type="submit" class="modal-close" id="authSubmit">CREATE ACCOUNT</button>
+            </form>
+
+            <div class="separator-line"></div>
+
+            <div class="auth-toggle">
+                <span id="authToggleText">Already have an account?</span>
+                <a href="#" id="authToggleLink">Sign in</a>
+            </div>
+
+            <button class="modal-close secondary" id="authCancel">CANCEL</button>
+        </div>
+    </div>
+
+    <script src="sounds.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

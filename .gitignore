@@ -1,0 +1,41 @@
+# Sound files (not included in repo - download separately)
+sounds/*.mp3
+sounds/*.wav
+sounds/*.ogg
+
+# Backups
+backup/
+*.backup
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Environment files
+.env
+.env.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# PocketBase data (if running locally)
+pb_data/
+pb_migrations/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Node modules (if you add build tools later)
+node_modules/

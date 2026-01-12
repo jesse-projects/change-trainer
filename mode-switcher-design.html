@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Mode Switcher - Design Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink-black: #1a1a1a;
+            --paper-cream: #F5F1E8;
+            --subtle-gray: #999;
+            --register-green: #2d5f2e;
+            --receipt-blue: #4a90e2;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'VT323', monospace;
+            background: linear-gradient(180deg, #E8E4DC 0%, var(--paper-cream) 100%);
+            color: var(--ink-black);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .demo-container {
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            color: var(--subtle-gray);
+            letter-spacing: 1px;
+        }
+
+        /* ========================================
+           OPTION 1: PERFORATION TEAR-OFF
+           ======================================== */
+        .receipt-mode-switcher {
+            position: relative;
+            margin: 2rem 0;
+            user-select: none;
+        }
+
+        .perforation-line {
+            position: relative;
+            height: 2px;
+            background-image: repeating-linear-gradient(
+                to right,
+                var(--ink-black) 0px,
+                var(--ink-black) 4px,
+                transparent 4px,
+                transparent 8px
+            );
+            margin: 0.5rem 0;
+        }
+
+        .mode-labels {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            cursor: pointer;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px dashed var(--ink-black);
+            border-radius: 4px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .mode-labels:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-1px);
+        }
+
+        .mode-labels:active {
+            transform: translateY(0);
+        }
+
+        .mode-option {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .mode-option.inactive {
+            opacity: 0.35;
+            transform: scale(0.95);
+        }
+
+        .mode-option.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .mode-number {
+            display: block;
+            font-size: 0.75rem;
+            letter-spacing: 2px;
+            color: var(--subtle-gray);
+            margin-bottom: 0.25rem;
+        }
+
+        .mode-name {
+            display: block;
+            font-size: 1.25rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: var(--ink-black);
+        }
+
+        .mode-option.active .mode-name {
+            color: var(--register-green);
+        }
+
+        /* Active indicator */
+        .active-indicator {
+            position: absolute;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60%;
+            height: 3px;
+            background: var(--register-green);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mode-option.active .active-indicator {
+            opacity: 1;
+        }
+
+        /* Divider between modes */
+        .mode-divider {
+            width: 1px;
+            height: 40px;
+            background: var(--ink-black);
+            opacity: 0.2;
+        }
+
+        /* ========================================
+           OPTION 2: RECEIPT TOGGLE SWITCH
+           ======================================== */
+        .receipt-toggle {
+            margin: 3rem 0;
+        }
+
+        .toggle-container {
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid var(--ink-black);
+            border-radius: 6px;
+            padding: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            position: relative;
+        }
+
+        .toggle-button {
+            flex: 1;
+            padding: 1rem;
+            background: transparent;
+            border: 2px dashed transparent;
+            border-radius: 4px;
+            font-family: 'VT323', monospace;
+            font-size: 1.125rem;
+            letter-spacing: 1px;
+            color: var(--subtle-gray);
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .toggle-button:hover {
+            color: var(--ink-black);
+        }
+
+        .toggle-button.active {
+            background: white;
+            border-color: var(--ink-black);
+            color: var(--register-green);
+            font-weight: bold;
+            box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .toggle-label {
+            display: block;
+            font-size: 0.625rem;
+            letter-spacing: 2px;
+            margin-bottom: 0.25rem;
+            opacity: 0.6;
+        }
+
+        .toggle-button.active .toggle-label {
+            opacity: 1;
+        }
+
+        /* ========================================
+           OPTION 3: STAMP VALIDATOR STYLE
+           ======================================== */
+        .stamp-switcher {
+            margin: 3rem 0;
+        }
+
+        .stamp-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stamp-option {
+            background: rgba(255, 255, 255, 0.5);
+            border: 2px solid var(--ink-black);
+            border-radius: 4px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.25s ease;
+        }
+
+        .stamp-option:hover {
+            background: rgba(255, 255, 255, 0.8);
+            transform: translateY(-2px);
+            box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .stamp-option:active {
+            transform: translateY(0);
+            box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .stamp-option.active {
+            background: white;
+            border-width: 3px;
+        }
+
+        .stamp-mark {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--ink-black);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            opacity: 0;
+            transform: scale(0) rotate(-45deg);
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .stamp-option.active .stamp-mark {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+            color: var(--register-green);
+            border-color: var(--register-green);
+        }
+
+        .stamp-mode-number {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--subtle-gray);
+            margin-bottom: 0.5rem;
+        }
+
+        .stamp-option.active .stamp-mode-number {
+            color: var(--register-green);
+        }
+
+        .stamp-mode-name {
+            display: block;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            color: var(--ink-black);
+        }
+
+        /* Demo labels */
+        .option-label {
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+            color: var(--receipt-blue);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: center;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border: 1px solid var(--receipt-blue);
+            border-radius: 4px;
+        }
+
+        .recommendation {
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: rgba(45, 95, 46, 0.1);
+            border: 2px solid var(--register-green);
+            border-radius: 6px;
+        }
+
+        .recommendation h2 {
+            font-size: 1.25rem;
+            color: var(--register-green);
+            margin-bottom: 1rem;
+        }
+
+        .recommendation p {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: var(--ink-black);
+            margin-bottom: 0.5rem;
+        }
+
+        .recommendation ul {
+            margin: 1rem 0 0 2rem;
+            font-size: 1.125rem;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1>RECEIPT MODE SWITCHER - DESIGN OPTIONS</h1>
+
+        <!-- Option 1 -->
+        <div class="option-label">Option 1: Perforation Toggle</div>
+        <div class="receipt-mode-switcher">
+            <div class="mode-labels" id="perfSwitch">
+                <div class="mode-option active" data-mode="1">
+                    <span class="mode-number">MODE 1</span>
+                    <span class="mode-name">CALCULATE</span>
+                    <div class="active-indicator"></div>
+                </div>
+                <div class="mode-divider"></div>
+                <div class="mode-option inactive" data-mode="2">
+                    <span class="mode-number">MODE 2</span>
+                    <span class="mode-name">COUNT CHANGE</span>
+                    <div class="active-indicator"></div>
+                </div>
+            </div>
+            <div class="perforation-line"></div>
+        </div>
+
+        <!-- Option 2 -->
+        <div class="option-label">Option 2: Receipt Toggle</div>
+        <div class="receipt-toggle">
+            <div class="toggle-container">
+                <button class="toggle-button active" data-mode="1">
+                    <span class="toggle-label">MODE 1</span>
+                    CALCULATE
+                </button>
+                <button class="toggle-button" data-mode="2">
+                    <span class="toggle-label">MODE 2</span>
+                    COUNT CHANGE
+                </button>
+            </div>
+        </div>
+
+        <!-- Option 3 -->
+        <div class="option-label">Option 3: Stamp Validator</div>
+        <div class="stamp-switcher">
+            <div class="stamp-container">
+                <div class="stamp-option active" data-mode="1">
+                    <div class="stamp-mark">✓</div>
+                    <span class="stamp-mode-number">1</span>
+                    <span class="stamp-mode-name">CALCULATE</span>
+                </div>
+                <div class="stamp-option" data-mode="2">
+                    <div class="stamp-mark">✓</div>
+                    <span class="stamp-mode-number">2</span>
+                    <span class="stamp-mode-name">COUNT CHANGE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recommendation -->
+        <div class="recommendation">
+            <h2>💡 RECOMMENDATION</h2>
+            <p><strong>Option 1 (Perforation Toggle)</strong> is the most elegant for your app because:</p>
+            <ul>
+                <li>Uses receipt metaphor authentically (tear-off line)</li>
+                <li>Single-tap interaction area (no separate buttons)</li>
+                <li>Compact horizontal design fits naturally between sections</li>
+                <li>Visual weight shifts smoothly between modes</li>
+                <li>Minimal vertical space usage</li>
+            </ul>
+            <p><strong>Placement:</strong> Between transaction section and input/holding areas</p>
+        </div>
+    </div>
+
+    <script>
+        // Demo interactivity - all three options
+
+        // Option 1: Perforation
+        const perfSwitch = document.getElementById('perfSwitch');
+        perfSwitch.addEventListener('click', () => {
+            const options = perfSwitch.querySelectorAll('.mode-option');
+            options.forEach(opt => {
+                opt.classList.toggle('active');
+                opt.classList.toggle('inactive');
+            });
+        });
+
+        // Option 2: Toggle
+        const toggleButtons = document.querySelectorAll('.toggle-button');
+        toggleButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                toggleButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Option 3: Stamp
+        const stampOptions = document.querySelectorAll('.stamp-option');
+        stampOptions.forEach(opt => {
+            opt.addEventListener('click', () => {
+                stampOptions.forEach(o => o.classList.remove('active'));
+                opt.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
