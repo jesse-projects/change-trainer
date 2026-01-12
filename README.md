@@ -4,6 +4,8 @@ A retro receipt-themed web app for practicing cash register skills. Built to hel
 
 **Live Demo:** [apps.jesseprojects.com/changetrainer](https://apps.jesseprojects.com/changetrainer/)
 
+![Screenshots of the Change Trainer on JesseProjects.com](./og-image.png)
+
 ## Features
 
 ### Two Training Modes
